@@ -14,22 +14,23 @@ const lines = data.split(/\r?\n/).filter(line => line.length > 0);
 
 const puppeteer = require('puppeteer');
 (async () => {
-    const browser = await puppeteer.launch()
-    const page = await browser.newPage()
+    const browser = await puppeteer.launch({
+        headless: false,
+        slowMo: 300 // ms 
+    });
+    // const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
     for (let counter=0; counter < 1; counter++){
         let id = lines[counter]
         await page.goto('https://stars.bilkent.edu.tr/evalreport/index.php?mode=ins&insId='+id);
+        const hrefs = await page.$$eval('a', links => links.map(a => a.href));
         
-        let evalNum = 0;
-        
-        let asd = await page.$$eval( 'a', a => a[evalNum].href).catch((...args) => console.log(...args))
-        console.log(asd)
-        // for (evalNum = 0; evalNum < 5; evalNum++){
-        //     let asd = await page.$$eval( 'a', a => a[evalNum].href)
-        //     console.log(asd)
-        // }
-        
+        for(let i in hrefs){
+            let temp_page = await browser.newPage()
+            await temp_page.goto(hrefs[i])
+            await temp_page.close()
+        }
     }
 
     // var notExist = await page.evaluate(() => document.getElementsByClassName('fieldsetsII').length)
@@ -37,4 +38,4 @@ const puppeteer = require('puppeteer');
     // await delay(60*1000); //wait for one minute!
     
     await browser.close()
-  })()
+  })();
