@@ -21,15 +21,32 @@ const puppeteer = require('puppeteer');
     // const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
-    for (let counter=0; counter < 1; counter++){
+    for (let counter=0; counter < 3; counter++){
         let id = lines[counter]
         await page.goto('https://stars.bilkent.edu.tr/evalreport/index.php?mode=ins&insId='+id);
-        const hrefs = await page.$$eval('a', links => links.map(a => a.href));
-        
+        const hrefs = await page.$$eval('tr > td > a', links => links.map(a => a.href));
+        var semCode;
+        loop2: 
         for(let i in hrefs){
-            let temp_page = await browser.newPage()
-            await temp_page.goto(hrefs[i])
-            await temp_page.close()
+
+            var regex = /semCode=[0-9][0-9]*/;
+            let found = hrefs[i].match(regex)
+            if (found){
+                semCode = found[0].split("=")[1]
+                console.log(semCode);
+                    if (semCode > 20151){
+                    let temp_page = await browser.newPage()
+                    await temp_page.goto(hrefs[i])
+                    await temp_page.close()
+                } 
+                else {
+                    break loop2;
+                }
+            } 
+            else {
+                break loop2;
+            }
+            
         }
     }
 
